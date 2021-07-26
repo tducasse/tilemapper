@@ -1,5 +1,8 @@
 -- tilemapper v0.0.1
--- Depends on json.lua (https://github.com/rxi/json.lua) and classic.lua (https://github.com/rxi/classic)
+-- Depends on:
+--  - json.lua (https://github.com/rxi/json.lua)
+--  - classic.lua (https://github.com/rxi/classic)
+--  - bump.lua (https://github.com/kikito/bump.lua)
 
 local json = require("json")
 local Class = required("classic")
