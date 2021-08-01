@@ -1,11 +1,10 @@
--- tilemapper v0.0.1
+-- tilemapper v0.0.2
 -- Depends on:
 --  - json.lua (https://github.com/rxi/json.lua)
 --  - classic.lua (https://github.com/rxi/classic)
 --  - bump.lua (https://github.com/kikito/bump.lua)
 
-local json = require("json")
-local Class = required("classic")
+local json = require("lib.json")
 
 local Tilemapper = Class:extend()
 
@@ -83,22 +82,25 @@ local function getEntities(layer)
   local entities = {}
   for i = 1, #instances do
     local entity = instances[i]
-    local _fields = entity.fieldInstances
-    local fields = {}
-    for j = 1, #_fields do
-      local field = _fields[j]
-      fields[field.__identifier] = field.__value
+    if not entities[entity.__identifier] then
+      entities[entity.__identifier] = {}
     end
-    entities[entity.__identifier] = {
+    local entity_obj = {
       x = entity.px[1],
       y = entity.px[2],
-      top = fields.top,
-      left = fields.left,
       w = entity.width,
       h = entity.height,
     }
+    local _fields = entity.fieldInstances
+    for j = 1, #_fields do
+      local field = _fields[j]
+      entity_obj[field.__identifier] = field.__value
+    end
+    entities[entity.__identifier][#entities[entity.__identifier] + 1] =
+        entity_obj
   end
   entities.name = layer.__identifier
+  entities.grid_size = layer.__gridSize
   return entities
 end
 
@@ -259,4 +261,3 @@ function Tilemapper:draw()
 end
 
 return Tilemapper
-
