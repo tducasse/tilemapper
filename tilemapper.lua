@@ -1,4 +1,4 @@
--- tilemapper v0.0.2
+-- tilemapper v0.0.3
 -- Depends on:
 --  - json.lua (https://github.com/rxi/json.lua)
 --  - classic.lua (https://github.com/rxi/classic)
@@ -36,31 +36,33 @@ function AutoLayer:new(tiles, name, tileset, size, spacing, padding)
   end
   local quads = {}
   for k, info in pairs(quadInfo) do
-    local offX = math.floor(info[1] / size) * (padding + spacing) + padding
-    local offY = math.floor(info[2] / size) * (padding + spacing) + padding
     quads[k] = love.graphics.newQuad(
-                   offX, offY, size, size, self.tileset:getWidth(),
+                   info[1], info[2], size, size, self.tileset:getWidth(),
                    self.tileset:getHeight())
   end
   self.quads = quads
 end
 
-local function getIntGrid(layer)
+local function getIntGrid(layer, _, options)
   local width = layer.__cWid
   local grid = layer.intGridCsv
+  local collisions = options and options.collisions or {}
   local tiles = {}
   local size = layer.__gridSize
   for i = 0, #grid - 1 do
     if grid[i + 1] > 0 then
-      local y = math.floor(i / width)
-      local x = i - y * width
-      tiles[#tiles + 1] = {
-        x = x * size,
-        y = y * size,
-        v = grid[i + 1],
-        h = size,
-        w = size,
-      }
+      local v = grid[i + 1]
+      if collisions[v] then
+        local y = math.floor(i / width)
+        local x = i - y * width
+        tiles[#tiles + 1] = {
+          x = x * size,
+          y = y * size,
+          v = v,
+          h = size,
+          w = size,
+        }
+      end
     end
   end
   return IntGrid(tiles, layer.__identifier, size)
