@@ -1,9 +1,8 @@
--- tilemapper v0.0.3
+-- tilemapper v0.0.4
 -- Depends on:
 --  - json.lua (https://github.com/rxi/json.lua)
 --  - classic.lua (https://github.com/rxi/classic)
 --  - bump.lua (https://github.com/kikito/bump.lua)
-
 local json = require("lib.json")
 
 local Tilemapper = Class:extend()
@@ -145,6 +144,9 @@ end
 
 local function getLevel(_level, root, options, tilesets, levelsByUid)
   local level = getLayers(_level.layerInstances, root, options, tilesets)
+  for _, field in ipairs(_level.fieldInstances or {}) do
+    level[field.__identifier] = field.__value
+  end
   level.name = _level.identifier
   level.width = _level.pxWid
   level.height = _level.pxHei
