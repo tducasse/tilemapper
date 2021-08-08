@@ -1,4 +1,4 @@
--- tilemapper v0.0.4
+-- tilemapper v0.0.5
 -- Depends on:
 --  - json.lua (https://github.com/rxi/json.lua)
 --  - classic.lua (https://github.com/rxi/classic)
@@ -11,6 +11,28 @@ local Layer = Class:extend()
 function Layer:new(tiles, name)
   self.tiles = tiles
   self.name = name
+end
+
+local TileLayer = Layer:extend()
+function TileLayer:new(tiles, name, tileset, size, spacing, padding)
+  TileLayer.super.new(self, tiles, name)
+  self.type = "tile"
+  self.tileset = love.graphics.newImage(tileset)
+  self.size = size
+  local quadInfo = {}
+  for i = 1, #tiles do
+    local tile = tiles[i]
+    if not quadInfo[tile.t] then
+      quadInfo[tile.t] = tile.src
+    end
+  end
+  local quads = {}
+  for k, info in pairs(quadInfo) do
+    quads[k] = love.graphics.newQuad(
+                   info[1], info[2], size, size, self.tileset:getWidth(),
+                   self.tileset:getHeight())
+  end
+  self.quads = quads
 end
 
 local IntGrid = Layer:extend()
@@ -78,6 +100,17 @@ local function getAutoLayer(layer, root, options, tilesets)
              layer.__gridSize, tileset.spacing, tileset.padding)
 end
 
+local function getTileLayer(layer, root, options, tilesets)
+  local tilesetPath = root .. layer.__tilesetRelPath
+  local tileset = tilesets[layer.__tilesetDefUid]
+  if options and options.aseprite then
+    tilesetPath = tilesetPath:gsub("aseprite", "png")
+  end
+  return TileLayer(
+             layer.gridTiles, layer.__identifier, tilesetPath, layer.__gridSize,
+             tileset.spacing, tileset.padding)
+end
+
 local function getEntities(layer)
   local instances = layer.entityInstances
   local entities = {}
@@ -109,6 +142,7 @@ local layerTypes = {
   AutoLayer = getAutoLayer,
   IntGrid = getIntGrid,
   Entities = getEntities,
+  Tiles = getTileLayer,
 }
 
 local function getLayer(_layer, root, options, tilesets)
@@ -224,6 +258,14 @@ function Tilemapper:removeCollisions()
 end
 
 function AutoLayer:draw()
+  local tiles = self.tiles
+  for i = 1, #tiles do
+    local tile = tiles[i]
+    love.graphics.draw(self.tileset, self.quads[tile.t], tile.px[1], tile.px[2])
+  end
+end
+
+function TileLayer:draw()
   local tiles = self.tiles
   for i = 1, #tiles do
     local tile = tiles[i]
