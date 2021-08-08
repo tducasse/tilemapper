@@ -296,9 +296,19 @@ function Tilemapper:nextLevel(dir)
   self:loadLevel(self.active.next[dir])
 end
 
+local function get_sorted_keys(t)
+  local keys = {}
+  for k in pairs(t) do
+    table.insert(keys, k)
+  end
+  table.sort(keys)
+  return keys
+end
+
 function Tilemapper:draw()
   local layers = self.active
-  for _, layer in pairs(layers) do
+  for _, k in ipairs(get_sorted_keys(layers)) do
+    local layer = layers[k]
     local meta = getmetatable(layer)
     if meta and meta.draw then
       layer:draw()
